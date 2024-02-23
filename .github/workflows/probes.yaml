@@ -1,0 +1,27 @@
+name: probes
+
+on:
+  push:
+    branches:
+      - '**/*'
+  schedule:
+    # every 15 minutes
+    - cron: '*/15 * * * *'
+
+jobs:
+  probes:
+    strategy:
+      matrix:
+        url: ["https://radar.xpeho.com", "https://yaki.xpeho.fr", "https://udsp59.web.app/"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check URL
+        run: |
+          HTTP_CODE=$(curl -sL -w "%{http_code}\\n" "${{ matrix.url }}" -o /dev/null)
+          if [ $HTTP_CODE -ge 400 ]; then
+            echo "Error calling ${{ matrix.url }}: $HTTP_CODE"
+            exit 1
+          else
+            echo "Success calling ${{ matrix.url }}: $HTTP_CODE"
+          fi
+            
